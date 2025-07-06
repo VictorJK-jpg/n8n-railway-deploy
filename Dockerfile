@@ -31,6 +31,10 @@ WORKDIR /usr/local/bin/n8n
 COPY --from=build /usr/local/lib/node_modules/n8n ./node_modules/n8n
 COPY --from=build /usr/local/bin/n8n /usr/local/bin/n8n
 
+# --- NEW LINE ADDED HERE ---
+# Ensure the n8n executable has execute permissions
+RUN chmod +x /usr/local/bin/n8n
+
 # Expose the port n8n listens on (default 5678)
 # Railway will map this to 8080 externally
 EXPOSE 5678
