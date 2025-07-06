@@ -40,5 +40,6 @@ EXPOSE 5678
 ENV N8N_PORT=5678
 ENV N8N_PROTOCOL=https
 
-# Command to run n8n
-CMD ["n8n", "start"]
+# --- MODIFIED CMD INSTRUCTION ---
+# Directly execute the main n8n script from its node_modules
+CMD ["node", "./node_modules/n8n/bin/n8n", "start"]
