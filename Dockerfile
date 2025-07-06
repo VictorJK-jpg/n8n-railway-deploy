@@ -24,11 +24,14 @@ FROM alpine:3.19
 # you might need to add them here.
 RUN apk add --no-cache curl ca-certificates nodejs npm
 
-# Set working directory
-WORKDIR /usr/local/bin/n8n
+# --- MODIFIED WORKDIR AND COPY COMMANDS ---
+# Set working directory to where n8n's modules will reside
+WORKDIR /usr/local/lib/node_modules/n8n
 
 # Copy n8n installation from the build stage
-COPY --from=build /usr/local/lib/node_modules/n8n ./node_modules/n8n
+COPY --from=build /usr/local/lib/node_modules/n8n .
+
+# Copy the n8n executable to the standard bin path
 COPY --from=build /usr/local/bin/n8n /usr/local/bin/n8n
 
 # Expose the port n8n listens on (default 5678)
@@ -40,6 +43,5 @@ EXPOSE 5678
 ENV N8N_PORT=5678
 ENV N8N_PROTOCOL=https
 
-# --- MODIFIED CMD INSTRUCTION ---
 # Explicitly call node and the n8n executable
 CMD ["node", "/usr/local/bin/n8n", "start"]
