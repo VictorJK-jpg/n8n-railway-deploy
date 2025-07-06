@@ -5,32 +5,30 @@ FROM node:20-alpine AS build
 # Set working directory
 WORKDIR /app
 
-# Install n8n globally. This creates the necessary structure for copying.
+# Install n8n as a local dependency
+# This creates a node_modules directory with n8n and its dependencies
 ARG N8N_VERSION=1.39.1
-RUN npm install -g n8n@${N8N_VERSION}
+RUN npm install n8n@${N8N_VERSION} --production --unsafe-perm --omit=dev --legacy-peer-deps
 
 # --- Stage 2: Production Stage ---
 # Use a minimal base image for the final runtime
 FROM alpine:3.19
 
 # Install necessary runtime dependencies and Node.js
-# We need nodejs and npm to run n8n and install its dependencies
 RUN apk add --no-cache curl ca-certificates nodejs npm
 
-# Set working directory for n8n
-WORKDIR /usr/local/lib/node_modules/n8n
+# Set working directory to a standard location for the app
+WORKDIR /app
 
-# Copy the n8n package content from the build stage
-# This ensures all its files, including package.json, are present
-COPY --from=build /usr/local/lib/node_modules/n8n .
+# Copy the node_modules directory from the build stage
+COPY --from=build /app/node_modules ./node_modules
 
-# Install n8n's production dependencies within this stage
-# This ensures all required modules like 'semver' are correctly placed
-# Use --legacy-peer-deps to handle potential dependency conflicts
-RUN npm install --production --unsafe-perm --omit=dev --legacy-peer-deps
+# Copy the n8n executable (which is usually in .bin within node_modules)
+# This path might vary slightly, but it's common for npm to put executables here
+COPY --from=build /app/node_modules/.bin/n8n /usr/local/bin/n8n
 
-# Copy the n8n executable (symlink) to the standard bin path
-COPY --from=build /usr/local/bin/n8n /usr/local/bin/n8n
+# Set the NODE_PATH to ensure Node.js can find modules
+ENV NODE_PATH=/app/node_modules
 
 # Set the PATH to include global npm binaries
 ENV PATH="/usr/local/bin:${PATH}"
