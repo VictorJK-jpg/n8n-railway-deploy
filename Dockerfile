@@ -42,4 +42,4 @@ ENV N8N_PROTOCOL=https
 ENV N8N_BIND_ADDRESS=0.0.0.0
 
 # Command to run n8n
-CMD ["n8n", "start"]
+CMD ["npm", "exec", "n8n", "--", "start"]
