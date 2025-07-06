@@ -22,7 +22,7 @@ FROM alpine:3.19
 # For a basic n8n setup, often curl and ca-certificates are sufficient.
 # If you use nodes that require specific system libraries (e.g., image processing),
 # you might need to add them here.
-RUN apk add --no-cache curl ca-certificates
+RUN apk add --no-cache curl ca-certificates nodejs npm
 
 # Set working directory
 WORKDIR /usr/local/bin/n8n
@@ -30,10 +30,6 @@ WORKDIR /usr/local/bin/n8n
 # Copy n8n installation from the build stage
 COPY --from=build /usr/local/lib/node_modules/n8n ./node_modules/n8n
 COPY --from=build /usr/local/bin/n8n /usr/local/bin/n8n
-
-# --- NEW LINE ADDED HERE ---
-# Ensure the n8n executable has execute permissions
-RUN chmod +x /usr/local/bin/n8n
 
 # Expose the port n8n listens on (default 5678)
 # Railway will map this to 8080 externally
@@ -44,6 +40,6 @@ EXPOSE 5678
 ENV N8N_PORT=5678
 ENV N8N_PROTOCOL=https
 
-# Command to run n8n
-# Use 'n8n start' for production environments
-CMD ["n8n", "start"]
+# --- MODIFIED CMD INSTRUCTION ---
+# Explicitly call node and the n8n executable
+CMD ["node", "/usr/local/bin/n8n", "start"]
