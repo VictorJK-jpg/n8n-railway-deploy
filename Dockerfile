@@ -13,7 +13,6 @@ RUN npm install n8n@${N8N_VERSION} --production --unsafe-perm --omit=dev --legac
 # Start from the official n8n image, which has n8n correctly installed and configured
 FROM n8nio/n8n:${N8N_VERSION}-alpine
 
-# Set the user to root temporarily to install additional packages if needed
 USER root
 
 # Install necessary runtime dependencies (if any, for example, git if you use git nodes)
