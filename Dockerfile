@@ -1,6 +1,6 @@
 # Define N8N_VERSION globally so it can be used in both FROM instructions
 # We'll still use this for the build stage if you have custom nodes,
-# but the production stage will use latest-alpine for robustness.
+# but the production stage will use latest for robustness.
 ARG N8N_VERSION=1.39.1
 
 # --- Stage 1: Build Stage (Optional, if you have custom nodes) ---
@@ -15,8 +15,8 @@ RUN npm install n8n@${N8N_VERSION} --production --unsafe-perm --omit=dev --legac
 
 # --- Stage 2: Production Stage (Using Official n8n Image as Base) ---
 # Start from the official n8n image, which has n8n correctly installed and configured
-# Using 'latest-alpine' for robustness, as specific patch versions might not have -alpine tags
-FROM n8nio/n8n:latest-alpine
+# Using 'latest' for robustness, as specific patch versions might not have -alpine tags
+FROM n8nio/n8n:latest
 
 # Set the user to root temporarily to install additional packages if needed
 USER root
