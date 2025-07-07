@@ -1,47 +1,36 @@
-# --- Stage 1: Build Stage ---
-# Use a Node.js base image with build tools
+# --- Stage 1: Build Stage (Optional, if you have custom nodes) ---
+# We'll keep this stage for now, but it might become unnecessary if you don't have custom code.
 FROM node:20-alpine AS build
 
 # Set working directory
 WORKDIR /app
 
-# Install n8n as a local dependency
-# This creates a node_modules directory with n8n and its dependencies
+# Install n8n as a local dependency (still useful for getting the exact version's files)
 ARG N8N_VERSION=1.39.1
 RUN npm install n8n@${N8N_VERSION} --production --unsafe-perm --omit=dev --legacy-peer-deps
 
-# --- Stage 2: Production Stage ---
-# Use a minimal base image for the final runtime
-FROM alpine:3.19
+# --- Stage 2: Production Stage (Using Official n8n Image as Base) ---
+# Start from the official n8n image, which has n8n correctly installed and configured
+FROM n8nio/n8n:${N8N_VERSION}-alpine
 
-# Install necessary runtime dependencies and Node.js
-RUN apk add --no-cache curl ca-certificates nodejs npm
+# Set the user to root temporarily to install additional packages if needed
+USER root
 
-# Set working directory to a standard location for the app
-WORKDIR /app
+# Install necessary runtime dependencies (if any, for example, git if you use git nodes)
+# This is where you'd add any system dependencies your specific workflows might need
+# RUN apk add --no-cache git
 
-# Copy the node_modules directory from the build stage
-COPY --from=build /app/node_modules ./node_modules
-
-# Copy the n8n executable (which is usually in .bin within node_modules)
-# This path might vary slightly, but it's common for npm to put executables here
-COPY --from=build /app/node_modules/.bin/n8n /usr/local/bin/n8n
-
-# Set the NODE_PATH to ensure Node.js can find modules
-ENV NODE_PATH=/app/node_modules
-
-# --- MODIFIED PATH ---
-# Ensure /usr/local/bin is in PATH and that npm's bin directory is also available
-ENV PATH="/usr/local/bin:/app/node_modules/.bin:${PATH}"
-
-# Expose the port n8n listens on (default 5678)
-EXPOSE 5678
+# Revert to the n8n user for security
+USER node
 
 # Set environment variables for n8n
 ENV N8N_PORT=5678
 ENV N8N_PROTOCOL=https
 ENV N8N_BIND_ADDRESS=0.0.0.0
+ENV N8N_HOST=https://n8n-railway-deploy-production-bdfc.up.railway.app
 
-# --- MODIFIED CMD INSTRUCTION ---
-# Directly execute the n8n command, now that PATH is more robust
-CMD ["n8n", "start"]
+# Expose the port n8n listens on
+EXPOSE 5678
+
+# The CMD is already set correctly in the official n8n image, so we don't need to override it
+# CMD ["n8n", "start"] # This is typically what the official image uses
