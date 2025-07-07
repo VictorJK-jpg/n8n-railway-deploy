@@ -30,8 +30,9 @@ COPY --from=build /app/node_modules/.bin/n8n /usr/local/bin/n8n
 # Set the NODE_PATH to ensure Node.js can find modules
 ENV NODE_PATH=/app/node_modules
 
-# Set the PATH to include global npm binaries
-ENV PATH="/usr/local/bin:${PATH}"
+# --- MODIFIED PATH ---
+# Ensure /usr/local/bin is in PATH and that npm's bin directory is also available
+ENV PATH="/usr/local/bin:/app/node_modules/.bin:${PATH}"
 
 # Expose the port n8n listens on (default 5678)
 EXPOSE 5678
@@ -41,5 +42,6 @@ ENV N8N_PORT=5678
 ENV N8N_PROTOCOL=https
 ENV N8N_BIND_ADDRESS=0.0.0.0
 
-# Command to run n8n
-CMD ["npm", "exec", "n8n", "--", "start"]
+# --- MODIFIED CMD INSTRUCTION ---
+# Directly execute the n8n command, now that PATH is more robust
+CMD ["n8n", "start"]
