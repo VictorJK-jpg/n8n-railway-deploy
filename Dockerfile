@@ -1,3 +1,6 @@
+# Define N8N_VERSION globally so it can be used in both FROM instructions
+ARG N8N_VERSION=1.39.1
+
 # --- Stage 1: Build Stage (Optional, if you have custom nodes) ---
 # We'll keep this stage for now, but it might become unnecessary if you don't have custom code.
 FROM node:20-alpine AS build
@@ -6,13 +9,13 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Install n8n as a local dependency (still useful for getting the exact version's files)
-ARG N8N_VERSION=1.39.1
 RUN npm install n8n@${N8N_VERSION} --production --unsafe-perm --omit=dev --legacy-peer-deps
 
 # --- Stage 2: Production Stage (Using Official n8n Image as Base) ---
 # Start from the official n8n image, which has n8n correctly installed and configured
 FROM n8nio/n8n:${N8N_VERSION}-alpine
 
+# Set the user to root temporarily to install additional packages if needed
 USER root
 
 # Install necessary runtime dependencies (if any, for example, git if you use git nodes)
@@ -26,7 +29,7 @@ USER node
 ENV N8N_PORT=5678
 ENV N8N_PROTOCOL=https
 ENV N8N_BIND_ADDRESS=0.0.0.0
-ENV N8N_HOST=https://n8n-railway-deploy-production-bdfc.up.railway.app
+ENV N8N_HOST=https://n8n-railway-deploy-production-bdfc.up.railway.app/
 
 # Expose the port n8n listens on
 EXPOSE 5678
